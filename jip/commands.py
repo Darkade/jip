@@ -45,9 +45,9 @@ def command(register=True, options=[]):
             index_manager.initialize()
             func(*args, **kwargs)
             index_manager.finalize()
-        ## register in command dictionary        
+        ## register in command dictionary
         if register:
-            commands[func.__name__.replace('_','-')] = wrapper
+            commands[func.__name__.replace('_', '-')] = wrapper
             wrapper.__doc__ = inspect.getdoc(func)
             wrapper.__raw__ = func
 
@@ -76,7 +76,7 @@ def _find_pom(artifact):
     """ find pom and repos contains pom """
     ## lookup cache first
     if cache_manager.is_artifact_in_cache(artifact):
-        pom = cache_manager.get_artifact_pom(artifact)       
+        pom = cache_manager.get_artifact_pom(artifact)
         return (pom, cache_manager.as_repos())
     else:
         for repos in repos_manager.repos:
@@ -85,7 +85,7 @@ def _find_pom(artifact):
             if pom is not None:
                 cache_manager.put_artifact_pom(artifact, pom)
                 return (pom, repos)
-        return None            
+        return None
 
 def _resolve_artifacts(artifacts, exclusions=[]):
     ## download queue
@@ -131,7 +131,7 @@ def _resolve_artifacts(artifacts, exclusions=[]):
                 d.exclusions.extend(artifact.exclusions)
                 if not index_manager.is_same_installed(d):
                     dependency_set.add(d)
-        
+
     return download_list
 
 def _install(artifacts, exclusions=[], options={}):
@@ -142,13 +142,14 @@ def _install(artifacts, exclusions=[], options={}):
         exclusions.extend(_exclusions)
 
     download_list = _resolve_artifacts(artifacts, exclusions)
-    
+
     if not dryrun:
         ## download to cache first
         for artifact in download_list:
             if artifact.repos != cache_manager.as_repos():
-                artifact.repos.download_jar(artifact, 
-                        cache_manager.get_jar_path(artifact))
+                artifact.repos.download_jar(artifact,
+                                            cache_manager.get_jar_path(artifact))
+
         pool.join()
         for artifact in download_list:
             cache_manager.get_artifact_jar(artifact, get_lib_path())
@@ -213,7 +214,7 @@ def update(artifact_id):
 
             ## find the repository contains the new release
             ts = selected_repos.last_modified(artifact)
-            if ts is not None and ts > lm :
+            if ts is not None and ts > lm:
                 ## download new jar
                 selected_repos.download_jar(artifact, get_lib_path())
 
@@ -261,12 +262,12 @@ def search(query="", options={}):
     else:
         g = options.get('group', '')
         a = options.get('artifact', '')
-        logger.info('[Searching] "%s:%s" in Maven central repository...' % (g,a))
+        logger.info('[Searching] "%s:%s" in Maven central repository...' % (g, a))
         results = searcher.search_group_artifact(g, a)
     if len(results) > 0:
         for item in results:
-            g,a,v,p = item
-            logger.info("%s-%s (%s)\n\t%s:%s:%s" % (a,v,p,g,a,v))
+            g, a, v, p = item
+            logger.info("%s-%s (%s)\n\t%s:%s:%s" % (a, v, p, g, a, v))
     else:
         logger.info('[Finished] nothing returned by criteria "%s"' % query)
 
@@ -299,5 +300,6 @@ def freeze():
     dependencies = index_manager.to_pom()
     repositories = repos_manager.to_pom()
     template = Template(open(os.path.join(__path__[0], '../data/pom.tpl'), 'r').read())
-    logger.info( template.substitute({'dependencies': dependencies,
-        'repositories': repositories}))
+    logger.info(template.substitute({'dependencies': dependencies,
+                                     'repositories': repositories
+                                    }))
